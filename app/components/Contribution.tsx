@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React, {  useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -11,17 +11,60 @@ import {
   Line,
   ResponsiveContainer,
 } from "recharts";
-import { Calendar, Target } from "lucide-react";
+import { Calendar, Download, Target } from "lucide-react";
+import html2canvas from 'html2canvas';
+import { motion} from "framer-motion";
 
 interface ContributionData {
   contributions: Record<string, number>;
   totalContributions: number;
+  username?: string;
 }
 
 const ContributionDashboard: React.FC<ContributionData> = ({
   contributions,
   totalContributions,
+  username = 'user'
 }) => {
+
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleShareToPNG = async () => {
+ 
+    setIsDownloading(true);
+    const element = document.getElementById('contribution-dashboard');
+    const elementShare = document.getElementById('share-menu');
+    const downloadmenu = document.getElementById('download-menu');
+    
+    elementShare?.classList.add('hidden');
+    downloadmenu?.classList.add('hidden');
+    if(!elementShare?.classList.contains('hidden')){
+      elementShare?.classList.add('hidden');
+      downloadmenu?.classList.add('hidden');
+    }
+    if (!element) return;
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#3d3d3d'
+      });
+      
+      const link = document.createElement('a');
+      link.download = `${username}-git-wrapped-2024.png`;
+      link.href = canvas.toDataURL('image/png');
+
+      link.click();
+      
+      setIsDownloading(false);
+      elementShare?.classList.remove('hidden');
+      downloadmenu?.classList.remove('hidden');
+    } catch (error) {
+      console.error('Error generating PNG', error);
+    }
+  };
+
   const processedContributions = useMemo(() => {
     return Object.entries(contributions)
       .map(([date, contributions]) => ({
@@ -59,18 +102,54 @@ const ContributionDashboard: React.FC<ContributionData> = ({
   }
 
   return (
-    <div className="bg-[#3d3d3d] text-slate-200 font-mono p-8 space-y-8">
+    <motion.div 
+      id="contribution-dashboard" 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="bg-[#3d3d3d] text-slate-200 font-mono p-8 space-y-8"
+    >
       {/* Header */}
-      <div className="border-b border-slate-400 pb-4">
-        <h1 className="text-3xl font-bold flex items-center">
-          <Target className="mr-3 text-slate-200" /> Contribution Insights
-        </h1>
-        <p className="text-sm text-slate-400 flex items-center">
-          <Calendar className="mr-2" /> Annual Overview -2024
-        </p>
+      <div className="w-full flex justify-between">
+        <div className="border-b border-slate-400 pb-4">
+          <motion.h1 
+            initial={{ x: 0, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-3xl font-bold flex items-center"
+          >
+            <Target className="mr-3 text-slate-200" /> Contribution Insights - {username}
+          </motion.h1>
+          <motion.p 
+            initial={{ x: 0, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-sm text-slate-400 flex items-center"
+          >
+            <Calendar className="mr-2" /> Annual Overview - 2024 
+          </motion.p>
+        </div>
+        {!isDownloading && ( <div className="relative share-menu">
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => handleShareToPNG()}
+            className="bg-slate-700 hover:bg-slate-600 p-2 rounded-full transition-colors"
+          >
+            <Download className="text-slate-200" />
+          </motion.button>
+         </div>
+)}
       </div>
+      
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {/* Stats Grid */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        className="grid grid-cols-2 md:grid-cols-4 gap-6"
+      >
         {[
           {
             label: "Total Contributions",
@@ -80,7 +159,6 @@ const ContributionDashboard: React.FC<ContributionData> = ({
             label: "Average Daily",
             value: stats.averageDaily,
           },
-          
           {
             label: "Total Active Days",
             value: stats.daysWithContributions,
@@ -90,23 +168,36 @@ const ContributionDashboard: React.FC<ContributionData> = ({
             value: stats.maxDaily,
           },
         ].map((stat, index) => (
-          <div
+          <motion.div
             key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 + index * 0.1 }}
             className="bg-[#2d2d2d] border border-slate-400 p-4 rounded-lg"
           >
             <p className="text-xs uppercase text-slate-300">{stat.label}</p>
             <p className="text-lg font-bold text-slate-100">{stat.value}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* ASCII Graph */}
-      <div className="bg-[#2d2d2d] border border-slate-400 p-4 rounded-lg ">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6 }}
+        className="bg-[#2d2d2d] border border-slate-400 p-4 rounded-lg"
+      >
         <AsciiGraph contributions={processedContributions} />
-      </div>
+      </motion.div>
 
       {/* Visualizations */}
-      <div className="grid grid-cols-2 gap-6">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.7 }}
+        className="grid grid-cols-2 gap-6"
+      >
         <div className="bg-[#2d2d2d] border border-slate-400 p-4 rounded-lg">
           <h3 className="text-lg mb-4 text-slate-200">Daily Contributions</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -147,8 +238,9 @@ const ContributionDashboard: React.FC<ContributionData> = ({
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </div>
-    </div>
+      </motion.div>
+      <h2 className=" flex justify-center w-full items-center">&#169; fal3n-4ngel/git-wrapped24</h2>
+    </motion.div>
   );
 };
 
@@ -158,7 +250,6 @@ interface AsciiGraphProps {
 
 const AsciiGraph: React.FC<AsciiGraphProps> = ({ contributions }) => {
   const asciiGraphLines = useMemo(() => {
-    // Filter out zero-contribution days and sort by date
     const filteredContributions = contributions
       .filter(({ contributions }) => contributions > 0)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());

@@ -83,6 +83,7 @@ export default function Home() {
           <ContributionDashboard
             contributions={contributions.contributionMap}
             totalContributions={contributions.totalContributions}
+            username={username}
           />
         )}
       </main>
