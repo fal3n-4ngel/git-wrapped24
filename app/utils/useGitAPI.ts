@@ -52,6 +52,8 @@ export async function fetchGitHubContributions(username: string, year: number = 
         }
       }
     );
+    console.log("Bearer", GITHUB_TOKEN);
+    console.log('GitHub contributions:', response.data.data.user.contributionsCollection.contributionCalendar);
 
     return response.data.data.user.contributionsCollection.contributionCalendar;
   } catch (error) {
