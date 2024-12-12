@@ -196,7 +196,7 @@ const ContributionDashboard: React.FC<ContributionData> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.7 }}
-        className="grid grid-cols-2 gap-6"
+        className="grid md:grid-cols-2 gap-6"
       >
         <div className="bg-[#2d2d2d] border border-slate-400 p-4 rounded-lg">
           <h3 className="text-lg mb-4 text-slate-200">Daily Contributions</h3>
