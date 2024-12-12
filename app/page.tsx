@@ -34,13 +34,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#2d2d2d] text-slate-200 py-10 font-mono">
       <Head>
-        <title>GitHub Contributions Visualizer</title>
+        <title>Git-Wrapped</title>
         <link rel="icon" href="/github-icon.png" />
       </Head>
 
       <main className="container mx-auto px-4 w-full">
         <h1 className="text-4xl font-bold text-center mb-8 text-slate-100">
-          GitHub Contributions Tracker 2024
+        Git-Wrapped 2024
         </h1>
 
         <form onSubmit={handleSubmit} className="mb-8">
