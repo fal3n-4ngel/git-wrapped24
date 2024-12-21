@@ -16,6 +16,7 @@ interface ContributionData {
 
 export async function fetchGitHubContributions(username: string, year: number = 2024) {
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+  username=username.replaceAll(' ', '');
   
   const query = `
     query ContributionGraph($username: String!, $from: DateTime!, $to: DateTime!) {
