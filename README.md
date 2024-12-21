@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Git Wrapped 24
 
-## Getting Started
+## What is Git Wrapped?
+Git Wrapped is a web application that provides a beautiful visualization of your GitHub contributions throughout the year. Similar to Spotify Wrapped, it generates an elegant and minimal dashboard showcasing your coding activity, making it easy to reflect on your development journey 🚀.
 
-First, run the development server:
+## Features
+- Beautiful, minimal contribution visualization
+- Daily and cumulative contribution graphs
+- ASCII art visualization of activity
+- Quick statistics overview
+- Profile information display
+- Easy sharing capabilities
+- Clean, monochromatic design
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Technical Stack
+```markdown
+# Frontend
+- Next.js as the main framework
+- Tailwind CSS for styling
+- Recharts for data visualization
+- Lucide React for icons
+- HTML2Canvas for screenshot generation
+
+# API Integration
+- GitHub REST API for user data
+- GitHub GraphQL API for detailed contribution data
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Component Structure
+```markdown
+# Core Components
+- ContributionDashboard: Main visualization component
+- AsciiGraph: ASCII representation of contributions
+- Profile Section: User information display
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Data Processing
+- Contribution data normalization
+- Date-based aggregation
+- Statistical calculations
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Design Philosophy
+The project emphasizes minimalism and clarity:
+- Monochromatic color scheme
+- Clean, spacious layouts
+- Focus on data visualization
+- Subtle animations and interactions
+- Responsive design across devices
 
-## Learn More
+## Getting Started
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Configure GitHub API credentials
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+## Contributors
+<table>
+<tr>
+    <td align="center">
+        <a href="https://github.com/fal3n-4ngel">
+            <img src="https://avatars.githubusercontent.com/u/79042374?v=4" width="100;" alt="fal3n-4ngel"/>
+            <br />
+            <sub><b>fal3n-4ngel</b></sub>
+        </a>
+    </td>
+</tr>
+</table>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
+MIT License - feel free to use and modify for your own projects!
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Acknowledgments
+- Thanks to GitHub for providing the API
+- Inspired by Spotify Wrapped
+- Built with ❤️ using Next.js and Tailwind CSS
