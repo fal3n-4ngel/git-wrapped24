@@ -21,29 +21,29 @@ body {
 }
 
 
-/* Custom Scrollbar for Dark Theme */
+/* Custom Scrollbar for Light Theme */
 ::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 4px;  /* Made slightly thinner for minimalist look */
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #2d2d2d; /* Matches the dark background of charts */
-  border-radius: 10px;
+  background: #f5f5f5;  /* Very light gray to match our theme */
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #555555; /* Subtle gray that matches grid lines */
-  border-radius: 10px;
-  border: 2px solid #2d2d2d; /* Creates a border effect */
+  background: #e5e5e5;  /* Light gray that matches our UI elements */
+  border-radius: 6px;
+  border: 1px solid #f5f5f5;  /* Creates subtle border effect */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #888888; /* Lighter gray on hover */
+  background: #d4d4d4;  /* Slightly darker on hover */
 }
 
-/* Optional: For Firefox */
+/* For Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #555555 #2d2d2d;
+  scrollbar-color: #e5e5e5 #f5f5f5;
 }

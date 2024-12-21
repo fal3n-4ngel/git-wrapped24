@@ -1,5 +1,5 @@
-"use client";
-import React, {  useMemo, useState } from "react";
+"use client"
+import React, { useMemo, useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -11,57 +11,94 @@ import {
   Line,
   ResponsiveContainer,
 } from "recharts";
-import { Calendar, Download, Target } from "lucide-react";
-import html2canvas from 'html2canvas';
-import { motion} from "framer-motion";
+import { Download } from "lucide-react";
+import html2canvas from "html2canvas";
+import AsciiGraph from "./AsciiGraph";
+
+interface GitHubUser {
+  login: string;
+  name: string;
+  avatar_url: string;
+  bio: string;
+  followers: number;
+  following: number;
+  public_repos: number;
+}
+
+interface ContributionsData {
+  totalContributions: number;
+  contributionMap: Record<string, number>;
+}
+
+interface UserData {
+  user: GitHubUser;
+  contributions: ContributionsData;
+}
 
 interface ContributionData {
   contributions: Record<string, number>;
   totalContributions: number;
   username?: string;
+  userData: UserData;
 }
 
 const ContributionDashboard: React.FC<ContributionData> = ({
   contributions,
   totalContributions,
-  username = 'user'
+  username = "user",
+  userData,
 }) => {
-
   const [isDownloading, setIsDownloading] = useState(false);
+  const [avatarDataUrl, setAvatarDataUrl] = useState<string>("");
+
+  // Convert avatar URL to data URL
+  useEffect(() => {
+    const convertImageToDataUrl = async () => {
+      try {
+        const response = await fetch(userData.user.avatar_url);
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setAvatarDataUrl(reader.result as string);
+        };
+        reader.readAsDataURL(blob);
+      } catch (error) {
+        console.error("Error converting avatar to data URL:", error);
+      }
+    };
+
+    convertImageToDataUrl();
+  }, [userData.user.avatar_url]);
 
   const handleShareToPNG = async () => {
- 
     setIsDownloading(true);
-    const element = document.getElementById('contribution-dashboard');
-    const elementShare = document.getElementById('share-menu');
-    const downloadmenu = document.getElementById('download-menu');
-    
-    elementShare?.classList.add('hidden');
-    downloadmenu?.classList.add('hidden');
-    if(!elementShare?.classList.contains('hidden')){
-      elementShare?.classList.add('hidden');
-      downloadmenu?.classList.add('hidden');
-    }
+    const element = document.getElementById("contribution-dashboard");
     if (!element) return;
 
     try {
       const canvas = await html2canvas(element, {
         scale: 2,
+        backgroundColor: "#ffffff",
+        allowTaint: true,
         useCORS: true,
-        backgroundColor: '#3d3d3d'
+        logging: true,
+        onclone: (clonedDoc) => {
+          // Replace avatar image source with data URL in the cloned document
+          const avatarImg = clonedDoc.querySelector("#user-avatar") as HTMLImageElement;
+          if (avatarImg && avatarDataUrl) {
+            avatarImg.src = avatarDataUrl;
+          }
+        }
       });
-      
-      const link = document.createElement('a');
-      link.download = `${username}-git-wrapped-2024.png`;
-      link.href = canvas.toDataURL('image/png');
 
+      const link = document.createElement("a");
+      link.download = `${username}-contributions.png`;
+      link.href = canvas.toDataURL("image/png");
       link.click();
-      
-      setIsDownloading(false);
-      elementShare?.classList.remove('hidden');
-      downloadmenu?.classList.remove('hidden');
     } catch (error) {
-      console.error('Error generating PNG', error);
+      console.error("Error generating PNG:", error);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -76,149 +113,117 @@ const ContributionDashboard: React.FC<ContributionData> = ({
 
   const stats = useMemo(() => {
     const contributionValues = Object.values(contributions);
-
     return {
       totalContributions,
       averageDaily: Number(
-        (totalContributions / contributionValues.length).toFixed(2)
+        (totalContributions / contributionValues.length).toFixed(1)
       ),
-      maxDaily: Math.max(...contributionValues),
-      minDaily: Math.min(...contributionValues),
-      medianDaily: calculateMedian(contributionValues),
       daysWithContributions: contributionValues.filter((c) => c > 0).length,
-      zeroContributionDays: contributionValues.filter((c) => c === 0).length,
+      maxDaily: Math.max(...contributionValues),
     };
   }, [contributions, totalContributions]);
 
-  function calculateMedian(values: number[]) {
-    const sorted = [...values].sort((a, b) => a - b);
-    const middle = Math.floor(sorted.length / 2);
-
-    if (sorted.length % 2 === 0) {
-      return Number(((sorted[middle - 1] + sorted[middle]) / 2).toFixed(2));
-    }
-
-    return Number(sorted[middle].toFixed(2));
-  }
-
   return (
-    <motion.div 
-      id="contribution-dashboard" 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="bg-[#3d3d3d] text-slate-200 font-mono p-8 space-y-8"
+    <div
+      id="contribution-dashboard"
+      className="max-w-6xl mx-auto bg-white p-6 space-y-8"
     >
       {/* Header */}
-      <div className="w-full flex justify-between">
-        <div className="border-b border-slate-400 pb-4">
-          <motion.h1 
-            initial={{ x: 0, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-3xl font-bold flex items-center"
-          >
-            <Target className="mr-3 text-slate-200" /> Contribution Insights - {username}
-          </motion.h1>
-          <motion.p 
-            initial={{ x: 0, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-sm text-slate-400 flex items-center"
-          >
-            <Calendar className="mr-2" /> Annual Overview - 2024 
-          </motion.p>
+      <div className="flex justify-between items-center relative">
+        <div className="bg-gray-50 rounded p-6 w-full mx-auto">
+          <div className="flex items-start space-x-6">
+            <img
+              id="user-avatar"
+              src={avatarDataUrl || userData.user.avatar_url}
+              alt={`${username}'s avatar`}
+              className="w-16 h-16 rounded-full z-0"
+              crossOrigin="anonymous"
+            />
+            <div>
+              <h2 className="text-lg text-gray-700">{userData.user.name}</h2>
+              <p className="text-gray-400 text-sm">@{userData.user.login}</p>
+              <p className="mt-2 text-gray-500 text-sm">{userData.user.bio}</p>
+              <div className="flex md:space-x-6 gap-2 mt-4 text-sm flex-wrap justify-start items-center">
+                <div>
+                  <span className="text-gray-700">
+                    {userData.user.followers}
+                  </span>
+                  <span className="text-gray-400 ml-1">followers</span>
+                </div>
+                <div>
+                  <span className="text-gray-700">
+                    {userData.user.following}
+                  </span>
+                  <span className="text-gray-400 ml-1">following</span>
+                </div>
+                <div className="w-fit">
+                  <span className="text-gray-700">
+                    {userData.user.public_repos}
+                  </span>
+                  <span className="text-gray-400 ml-1">repos</span>
+                </div>
+              </div>
+            </div>
+            {!isDownloading && (
+              <button
+                onClick={handleShareToPNG}
+                className="text-gray-400 hover:text-gray-600 transition-colors absolute right-5"
+              >
+                <Download className="w-5 h-5" />
+              </button>
+            )}
+          </div>
         </div>
-        {!isDownloading && ( <div className="relative share-menu">
-          <motion.button 
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => handleShareToPNG()}
-            className="bg-slate-700 hover:bg-slate-600 p-2 rounded-full transition-colors"
-          >
-            <Download className="text-slate-200" />
-          </motion.button>
-         </div>
-)}
       </div>
-      
 
-      {/* Stats Grid */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="grid grid-cols-2 md:grid-cols-4 gap-6"
-      >
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          {
-            label: "Total Contributions",
-            value: stats.totalContributions,
-          },
-          {
-            label: "Average Daily",
-            value: stats.averageDaily,
-          },
-          {
-            label: "Total Active Days",
-            value: stats.daysWithContributions,
-          },
-          {
-            label: "Max Daily",
-            value: stats.maxDaily,
-          },
+          { label: "Total Commits", value: stats.totalContributions },
+          { label: "Daily Avg", value: stats.averageDaily },
+          { label: "Active Days", value: stats.daysWithContributions },
+          { label: "Max Daily", value: stats.maxDaily },
         ].map((stat, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 + index * 0.1 }}
-            className="bg-[#2d2d2d] border border-slate-400 p-4 rounded-lg"
-          >
-            <p className="text-xs uppercase text-slate-300">{stat.label}</p>
-            <p className="text-lg font-bold text-slate-100">{stat.value}</p>
-          </motion.div>
+          <div key={index} className="bg-gray-50 p-3 rounded">
+            <p className="text-xs text-gray-400">{stat.label}</p>
+            <p className="text-lg text-gray-700">{stat.value}</p>
+          </div>
         ))}
-      </motion.div>
+      </div>
+      <AsciiGraph contributions={processedContributions} />
 
-      {/* ASCII Graph */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="bg-[#2d2d2d] border border-slate-400 p-4 rounded-lg"
-      >
-        <AsciiGraph contributions={processedContributions} />
-      </motion.div>
-
-      {/* Visualizations */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.7 }}
-        className="grid md:grid-cols-2 gap-6"
-      >
-        <div className="bg-[#2d2d2d] border border-slate-400 p-4 rounded-lg">
-          <h3 className="text-lg mb-4 text-slate-200">Daily Contributions</h3>
-          <ResponsiveContainer width="100%" height={300}>
+      {/* Charts */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="bg-gray-50 p-4 rounded">
+          <h3 className="text-sm text-gray-500 mb-4">Daily Activity</h3>
+          <ResponsiveContainer width="100%" height={200}>
             <BarChart data={processedContributions}>
-              <CartesianGrid stroke="#555555" strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fill: "#cccccc" }} />
-              <YAxis tick={{ fill: "#cccccc" }} />
-              <Tooltip
-                contentStyle={{ backgroundColor: "#2d2d2d", color: "#ffffff" }}
-                itemStyle={{ color: "#ffffff" }}
+              <CartesianGrid stroke="#f3f4f6" strokeDasharray="3 3" />
+              <XAxis
+                dataKey="date"
+                tick={{ fill: "#9ca3af", fontSize: 12 }}
+                tickLine={{ stroke: "#e5e7eb" }}
               />
-              <Bar dataKey="contributions" fill="#888888" />
+              <YAxis
+                tick={{ fill: "#9ca3af", fontSize: 12 }}
+                tickLine={{ stroke: "#e5e7eb" }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #f3f4f6",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                }}
+              />
+              <Bar dataKey="contributions" fill="#e5e7eb" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-[#2d2d2d] border border-slate-400 p-4 rounded-lg">
-          <h3 className="text-lg mb-4 text-slate-200">
-            Cumulative Contributions
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
+        <div className="bg-gray-50 p-4 rounded">
+          <h3 className="text-sm text-gray-500 mb-4">Cumulative Growth</h3>
+          <ResponsiveContainer width="100%" height={200}>
             <LineChart
               data={processedContributions.map((item, index) => ({
                 ...item,
@@ -227,58 +232,34 @@ const ContributionDashboard: React.FC<ContributionData> = ({
                   .reduce((sum, curr) => sum + curr.contributions, 0),
               }))}
             >
-              <CartesianGrid stroke="#555555" strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fill: "#cccccc" }} />
-              <YAxis tick={{ fill: "#cccccc" }} />
-              <Tooltip
-                contentStyle={{ backgroundColor: "#2d2d2d", color: "#ffffff" }}
-                itemStyle={{ color: "#ffffff" }}
+              <CartesianGrid stroke="#f3f4f6" strokeDasharray="3 3" />
+              <XAxis
+                dataKey="date"
+                tick={{ fill: "#9ca3af", fontSize: 12 }}
+                tickLine={{ stroke: "#e5e7eb" }}
               />
-              <Line type="monotone" dataKey="cumulative" stroke="#cccccc" />
+              <YAxis
+                tick={{ fill: "#9ca3af", fontSize: 12 }}
+                tickLine={{ stroke: "#e5e7eb" }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #f3f4f6",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="cumulative"
+                stroke="#9ca3af"
+                strokeWidth={1.5}
+                dot={false}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </motion.div>
-      <h2 className=" flex justify-center w-full items-center">&#169; fal3n-4ngel/git-wrapped24</h2>
-    </motion.div>
-  );
-};
-
-interface AsciiGraphProps {
-  contributions: { date: string; contributions: number }[];
-}
-
-const AsciiGraph: React.FC<AsciiGraphProps> = ({ contributions }) => {
-  const asciiGraphLines = useMemo(() => {
-    const filteredContributions = contributions
-      .filter(({ contributions }) => contributions > 0)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-    return filteredContributions.map(({ date, contributions }) => {
-      const bar = Array.from({ length: contributions }).map((_, idx) => (
-        <span key={idx} className="w-1 h-1">
-          ▓
-        </span>
-      ));
-
-      return (
-        <div
-          key={date}
-          className="text-sm font-mono bg-[#2d2d2d] text-slate-200 h-full overflow-y-clip"
-        >
-          <span className="flex flex-col whitespace-nowrap">{bar}</span>
-        </div>
-      );
-    });
-  }, [contributions]);
-
-  return (
-    <div className="bg-[#2d2d2d] p-4 rounded-lg">
-      <h3 className="text-lg font-semibold mb-4 text-slate-200">
-        Daily Contributions (ASCII)
-      </h3>
-      <div className="flex space-y-1 space-x-1 overflow-x-auto items-end">
-        {asciiGraphLines}
       </div>
     </div>
   );
