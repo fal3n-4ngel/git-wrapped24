@@ -40,6 +40,7 @@ interface ContributionData {
   totalContributions: number;
   username?: string;
   userData: UserData;
+  topLanguages: [string, number][];
 }
 
 const ContributionDashboard: React.FC<ContributionData> = ({
@@ -47,6 +48,7 @@ const ContributionDashboard: React.FC<ContributionData> = ({
   totalContributions,
   username = "user",
   userData,
+  topLanguages,
 }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string>("");
@@ -191,7 +193,20 @@ const ContributionDashboard: React.FC<ContributionData> = ({
         ))}
       </div>
       <AsciiGraph contributions={processedContributions} />
-
+   {/* Top Languages */}
+   {topLanguages.length > 0 && (
+        <div className="bg-gray-50 p-4 rounded">
+          <h3 className="text-sm text-gray-500 mb-4">Top Languages</h3>
+          <div className="space-y-2">
+            {topLanguages.map(([language, count], index) => (
+              <div key={index} className="flex justify-between items-center">
+                <span className="text-gray-700">{language}</span>
+                <span className="text-gray-500">{count} repos</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {/* Charts */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-gray-50 p-4 rounded">

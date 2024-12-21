@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Loader2, Github, AlertCircle } from "lucide-react";
 import {
   fetchGitHubContributions,
+  fetchTopLanguages,
   processContributionData,
 } from "./utils/useGitAPI";
 import ContributionDashboard from "./components/Contribution";
@@ -35,6 +36,7 @@ const GitWrapped: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [topLanguages, setTopLanguages] = useState<[string, number][]>([]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -58,11 +60,13 @@ const GitWrapped: React.FC = () => {
       const userDetails: GitHubUser = await response.json();
       const contributionsData = await fetchGitHubContributions(username);
       const processedData = processContributionData(contributionsData);
+      const languages = await fetchTopLanguages(username);
 
       setUserData({
         user: userDetails,
         contributions: processedData,
       });
+      setTopLanguages(languages);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -145,6 +149,7 @@ const GitWrapped: React.FC = () => {
         totalContributions={userData.contributions.totalContributions}
         username={username}
         userData={userData}
+        topLanguages={topLanguages}
       />
     </div>
   );
