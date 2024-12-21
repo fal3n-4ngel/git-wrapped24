@@ -8,7 +8,7 @@ interface AsciiGraphProps {
 const AsciiGraph: React.FC<AsciiGraphProps> = ({ contributions }) => {
   const asciiGraphLines = useMemo(() => {
     const filteredContributions = contributions
-      .filter(({ contributions }) => contributions > 0)
+      .filter(({ contributions }) => contributions >= 0)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     return filteredContributions.map(({ date, contributions }) => {
